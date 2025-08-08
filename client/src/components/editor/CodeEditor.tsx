@@ -135,6 +135,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           lineDecorationsWidth: showLineNumbers ? 24 : 50,
           overviewRulerBorder: false,
           scrollbar: {
+            alwaysConsumeMouseWheel: false, // Fixes an issue where scrolling to end of code block did not allow further scrolling
             vertical: 'visible',
             horizontal: 'visible',
             verticalScrollbarSize: 12,
