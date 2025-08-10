@@ -360,11 +360,7 @@ const EditSnippetModal: React.FC<EditSnippetModalProps> = ({
           </div>
 
           {/* Footer */}
-          {
-                // --> Shivam Naik - 07.08.2025
-                // Added more specificity to footer background to avoid visible background elements in edit/create snippet mode.
-                // <-- Shivam Naik - 07.08.2025
-          }
+          {// Added more specificity to footer background to avoid visible background elements in edit/create snippet mode. }
           <div className="!bg-light-surface dark:!bg-dark-surface modal-footer -bottom-5 inset-x-0 mt-4 z-10">
             <div className="flex justify-end gap-2 py-4">
               <button
