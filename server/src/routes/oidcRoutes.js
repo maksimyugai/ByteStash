@@ -11,13 +11,13 @@ const router = express.Router();
 
 function getBaseUrl(req) {
   const forwardedProto = req.get('X-Forwarded-Proto');
-  
-  const isSecure = req.secure || 
-                   forwardedProto === 'https' || 
-                   req.get('X-Forwarded-SSL') === 'on';
+
+  const isSecure = req.secure ||
+    forwardedProto === 'https' ||
+    req.get('X-Forwarded-SSL') === 'on';
 
   const protocol = isSecure ? 'https' : 'http';
-  
+
   const host = req.get('X-Forwarded-Host') || req.get('Host');
 
   Logger.debug('Protocol detection:', {
@@ -63,6 +63,39 @@ router.get('/auth', async (req, res) => {
   }
 });
 
+router.get('/logout', async (req, res) => {
+  try {
+    const oidc = await OIDCConfig.getInstance();
+    if (!oidc.isEnabled()) {
+      return res.redirect('/');
+    }
+
+    const authHeader = req.headers.cookie;
+    const token = authHeader && authHeader.split('=')[1];
+
+    if (!token) {
+      return res.status(401).json({ valid: false });
+    }
+
+    const baseUrl = getBaseUrl(req);
+    const logoutUrl = await oidc.getLogoutUrl(
+      baseUrl,
+      token // Encrpyted ID Token created when creating the IdP session
+    );
+
+    Logger.debug('Generated Logout URL:', logoutUrl);
+
+    // Erase the OIDCConfig instance to destroy the session in the server
+    OIDCConfig.instance = null;
+
+    res.redirect(logoutUrl);
+  } catch (error) {
+    Logger.error('OIDC logout error:', error);
+    const errorMessage = encodeURIComponent(error.message || 'Unknown error');
+    res.redirect(`/login?error=provider_error&message=${errorMessage}`);
+  }
+});
+
 router.get('/callback', async (req, res) => {
   try {
     const oidc = await OIDCConfig.getInstance();
@@ -78,10 +111,10 @@ router.get('/callback', async (req, res) => {
     const callbackUrl = oidc.getCallbackUrl(baseUrl);
     const queryString = new URLSearchParams(req.query).toString();
     const currentUrl = queryString ? `${callbackUrl}?${queryString}` : callbackUrl;
-    
+
     Logger.debug('Full callback URL:', currentUrl);
 
-    const { _, userInfo } = await oidc.handleCallback(currentUrl, callbackUrl);
+    const { tokens, userInfo } = await oidc.handleCallback(currentUrl, callbackUrl);
     Logger.debug('Authentication successful');
 
     const existingUser = await userRepository.findByOIDCId(
@@ -109,12 +142,16 @@ router.get('/callback', async (req, res) => {
       await up_v1_5_0_snippets(db, user.id);
     }
 
-    const token = jwt.sign({ 
+    const token = jwt.sign({
       id: user.id,
-      username: user.username 
-    }, JWT_SECRET, { 
-      expiresIn: TOKEN_EXPIRY 
+      username: user.username,
+      id_token: tokens.id_token
+    }, JWT_SECRET, {
+      expiresIn: TOKEN_EXPIRY
     });
+
+    // Set OIDC login config
+    oidc.loggedIn = true;
 
     res.redirect(`${process.env.BASE_PATH || ''}/auth/callback?token=${token}`);
   } catch (error) {

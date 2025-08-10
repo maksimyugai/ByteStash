@@ -15,6 +15,7 @@ import SnippetPage from './components/snippets/view/SnippetPage';
 import PublicSnippetStorage from './components/snippets/view/public/PublicSnippetStorage';
 import EmbedView from './components/snippets/embed/EmbedView';
 import RecycleSnippetStorage from './components/snippets/view/recycle/RecycleSnippetStorage';
+import { OIDCLogoutCallback } from './components/auth/oidc/OIDCLogoutCallback';
 
 const AuthenticatedApp: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -70,6 +71,7 @@ const App: React.FC = () => {
                 <Route path={ROUTES.LOGIN} element={<LoginPage />} />
                 <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
                 <Route path={ROUTES.AUTH_CALLBACK} element={<OIDCCallback />} />
+                <Route path={ROUTES.LOGOUT_CALLBACK} element={<OIDCLogoutCallback />} />
                 <Route path={ROUTES.SHARED_SNIPPET} element={<SharedSnippetView />} />
                 <Route path={ROUTES.PUBLIC_SNIPPETS} element={<PublicSnippetStorage />} />
                 <Route path={ROUTES.RECYCLE} element={<RecycleSnippetStorage />} />

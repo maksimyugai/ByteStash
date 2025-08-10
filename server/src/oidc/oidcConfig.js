@@ -1,9 +1,11 @@
 import * as client from 'openid-client';
 import Logger from '../logger.js';
 import { URL } from 'url';
-
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../middleware/auth.js';
 class OIDCConfig {
   static instance = null;
+  static loggedIn = false;
   #stateMap = new Map();
 
   static async getInstance() {
@@ -18,6 +20,12 @@ class OIDCConfig {
     // Ensure baseUrl doesn't end with a slash
     const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     return `${normalizedBaseUrl}/api/auth/oidc/callback`;
+  }
+
+  getCallbackLogoutUrl(baseUrl) {
+    // Ensure baseUrl doesn't end with a slash
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return `${normalizedBaseUrl}/auth/logout_callback`;
   }
 
   async initialize() {
@@ -36,10 +44,10 @@ class OIDCConfig {
 
       try {
         const issuerUrl = new URL(discoveryUrl);
-        
+
         this.config = await client.discovery(
-          issuerUrl, 
-          process.env.OIDC_CLIENT_ID, 
+          issuerUrl,
+          process.env.OIDC_CLIENT_ID,
           process.env.OIDC_CLIENT_SECRET
         );
 
@@ -120,9 +128,28 @@ class OIDCConfig {
     return client.buildAuthorizationUrl(this.config, parameters);
   }
 
+  async getLogoutUrl(baseUrl, id_token) {
+    const callback_url = this.getCallbackLogoutUrl(baseUrl);
+    const decoded = jwt.verify(id_token, JWT_SECRET);
+
+    if (!decoded.id_token) {
+      return res.status(401).json({ valid: false });
+    }
+    Logger.debug(callback_url);
+
+    const parameters = {
+      post_logout_redirect_uri: callback_url,
+      client_id: process.env.OIDC_CLIENT_ID,
+      state: client.randomState(),
+      id_token_hint: decoded.id_token
+    };
+
+    return client.buildEndSessionUrl(this.config, parameters);
+  }
+
   async handleCallback(currentUrl, callbackUrl) {
     Logger.debug('Handling callback with:', { currentUrl, callbackUrl });
-    
+
     const urlParams = new URL(currentUrl).searchParams;
     const state = urlParams.get('state');
 
@@ -153,7 +180,7 @@ class OIDCConfig {
       }
 
       const claims = tokens.claims();
-      
+
       Logger.debug('Token claims received:', {
         sub: claims.sub,
         scope: tokens.scope,
@@ -222,6 +249,7 @@ class OIDCConfig {
   getConfig() {
     return {
       enabled: this.isEnabled(),
+      logged_in: this.loggedIn,
       displayName: this.getDisplayName(),
     };
   }
