@@ -8,6 +8,9 @@ services:
     environment:
       # e.g. write /bytestash for a domain such as my.domain/bytestash, leave blank in every other case
       - BASE_PATH=
+      # optionally include additional allowed hosts for reverse proxies
+      # e.g. localhost,my.domain.com,my.domain.net
+      - ALLOWED_HOSTS=
       # Either provide JWT_SECRET directly or use JWT_SECRET_FILE for Docker secrets
       #- JWT_SECRET_FILE=/run/secrets/jwt
       - JWT_SECRET=your-secret
