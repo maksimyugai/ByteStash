@@ -19,6 +19,7 @@ import { Snippet } from "../../../types/snippets";
 import CategoryList from "../../categories/CategoryList";
 import { PreviewCodeBlock } from "../../editor/PreviewCodeBlock";
 import { getUniqueLanguages } from "../../../utils/language/languageUtils";
+import { basePath } from "../../../utils/api/basePath";
 
 interface SnippetCardProps {
   snippet: Snippet;
@@ -128,7 +129,7 @@ export const SnippetCard: React.FC<SnippetCardProps> = ({
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/snippets/${snippet.id}`, "_blank");
+    window.open(`${basePath}/snippets/${snippet.id}`, "_blank");
   };
 
   const handleDelete = (e: React.MouseEvent) => {
