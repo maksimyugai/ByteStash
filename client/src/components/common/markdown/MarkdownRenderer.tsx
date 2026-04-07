@@ -3,6 +3,9 @@ import ReactMarkdown from 'react-markdown';
 import Admonition from '../../utils/Admonition';
 import { flattenToText } from '../../../utils/markdownUtils';
 import MermaidViewer from './MermaidViewer';
+import remarkGfm from 'remark-gfm';
+
+const REMARK_PLUGINS = [remarkGfm];
 
 export interface MarkdownRendererProps {
     children: string;
@@ -14,6 +17,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ children, cl
     return (
         <ReactMarkdown
             className={className}
+            remarkPlugins={REMARK_PLUGINS}
             components={{
                 blockquote: ({ children }) => {
                     const text = flattenToText(children).trim();

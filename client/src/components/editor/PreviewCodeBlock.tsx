@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MarkdownRenderer from "../common/markdown/MarkdownRenderer";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vscDarkPlus,
-  oneLight,
-} from "react-syntax-highlighter/dist/cjs/styles/prism";
+import Editor from "@monaco-editor/react";
 import {
   getLanguageLabel,
   getMonacoLanguage,
@@ -76,25 +72,7 @@ export const PreviewCodeBlock: React.FC<PreviewCodeBlockProps> = ({
     .slice(0, previewLines + 5)
     .join("\n");
 
-  const baseTheme = isDark ? vscDarkPlus : oneLight;
   const backgroundColor = isDark ? "#1E1E1E" : "#ffffff";
-  const customStyle = {
-    ...baseTheme,
-    'pre[class*="language-"]': {
-      ...baseTheme['pre[class*="language-"]'],
-      margin: 0,
-      fontSize: "13px",
-      background: backgroundColor,
-      padding: "1rem",
-    },
-    'code[class*="language-"]': {
-      ...baseTheme['code[class*="language-"]'],
-      fontSize: "13px",
-      background: backgroundColor,
-      display: "block",
-      textIndent: 0,
-    },
-  };
 
   return (
     <div className="relative select-none" style={{ height: visibleHeight }}>
@@ -112,8 +90,7 @@ export const PreviewCodeBlock: React.FC<PreviewCodeBlockProps> = ({
           .token-line:nth-child(n+${previewLines + 1}) {
             visibility: hidden;
           }
-          .react-syntax-highlighter-line-number:nth-child(n+${
-            previewLines + 1
+          .react-syntax-highlighter-line-number:nth-child(n+${previewLines + 1
           }) {
             visibility: hidden;
           }
@@ -130,42 +107,40 @@ export const PreviewCodeBlock: React.FC<PreviewCodeBlockProps> = ({
             style={{ backgroundColor }}
           >
             <MarkdownRenderer
-              className={`markdown prose ${
-                isDark ? "prose-invert" : ""
-              } max-w-none`}
+              className={`markdown prose ${isDark ? "prose-invert" : ""
+                } max-w-none`}
               disableMermaid
             >
               {truncatedCode}
             </MarkdownRenderer>
           </div>
         ) : (
-          <div className="preview-wrapper">
-            <SyntaxHighlighter
+          <div className="preview-wrapper" style={{ 
+            height: visibleHeight, 
+            borderRadius: "0.5rem", 
+            overflow: "hidden", 
+            background: backgroundColor,
+            border: isDark ? '1px solid #333' : '1px solid #e5e7eb'
+          }}>
+            <Editor
+              height={visibleHeight}
               language={getMonacoLanguage(language)}
-              style={customStyle}
-              showLineNumbers={showLineNumbers}
-              wrapLines={true}
-              lineProps={{
-                style: {
-                  whiteSpace: "pre",
-                  wordBreak: "break-all",
-                  paddingLeft: 0,
-                },
+              theme={isDark ? "vs-dark" : "light"}
+              value={truncatedCode}
+              options={{
+                readOnly: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: "off",
+                padding: { top: 16, bottom: 16 },
+                lineNumbers: showLineNumbers ? "on" : "off",
+                renderLineHighlight: "none",
+                scrollbar: {
+                  vertical: "hidden",
+                  horizontal: "visible"
+                }
               }}
-              customStyle={{
-                maxHeight: visibleHeight,
-                minHeight: visibleHeight,
-                marginBottom: 0,
-                marginTop: 0,
-                textIndent: 0,
-                paddingLeft: showLineNumbers ? 10 : 20,
-                borderRadius: "0.5rem",
-                overflow: "hidden",
-                background: backgroundColor,
-              }}
-            >
-              {truncatedCode}
-            </SyntaxHighlighter>
+            />
           </div>
         )}
 
@@ -177,17 +152,19 @@ export const PreviewCodeBlock: React.FC<PreviewCodeBlockProps> = ({
           }}
         />
 
-        <CopyButton text={code} />
-        {!isRecycleView &&
-          isPublicView !== undefined &&
-          snippetId !== undefined &&
-          fragmentId !== undefined && (
-            <RawButton
-              isPublicView={isPublicView}
-              snippetId={snippetId}
-              fragmentId={fragmentId}
-            />
-          )}
+        <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
+          <CopyButton text={code} />
+          {!isRecycleView &&
+            isPublicView !== undefined &&
+            snippetId !== undefined &&
+            fragmentId !== undefined && (
+              <RawButton
+                isPublicView={isPublicView}
+                snippetId={snippetId}
+                fragmentId={fragmentId}
+              />
+            )}
+        </div>
       </div>
     </div>
   );

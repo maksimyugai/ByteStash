@@ -1,0 +1,64 @@
+{
+  "action": {
+    "activate": "Habilitar usuario",
+    "deactivate": "Inhabilitar usuario",
+    "delete": "Borrar usuario"
+  },
+  "columns": {
+    "labels": {
+      "actions": "Eventos",
+      "apiKeysCount": "Claves",
+      "authType": "Tipo de ingreso",
+      "created": "Registro",
+      "email": "Correo electrónico",
+      "lastLogin": "Último ingreso",
+      "snippetsCount": "Fragmentos",
+      "status": "Estado de la cuenta",
+      "username": "Usuario"
+    }
+  },
+  "confirmationModal": {
+    "message": "¿Confirmas el borrado de esta persona? Se destruirán de forma absoluta sus fragmentos, contraseñas API y datos compartidos. Esto no se puede revertir.",
+    "title": "Borrado de cuenta permanentemente"
+  },
+  "entityName_one": "usuario",
+  "entityName_many": "usuarios",
+  "entityName_other": "usuarios",
+  "error": {
+    "delete": {
+      "default": "No se pudo borrar al usuario"
+    },
+    "update": {
+      "default": "Error afectando el estado del usuario"
+    }
+  },
+  "filters": {
+    "authType": {
+      "all": "Tipos autorizados",
+      "internal": "Público (ByteStash)",
+      "oidc": "SSO (OIDC)"
+    },
+    "search": "Buscar por email o alias...",
+    "status": {
+      "active": "Solamente cuentas activas",
+      "all": "Todos los perfiles",
+      "inactive": "Vetados / Inactivos"
+    }
+  },
+  "status": {
+    "active": "Estable",
+    "inactive": "Inactivo"
+  },
+  "success": {
+    "delete": {
+      "default": "El usuario ya no existe"
+    },
+    "update": {
+      "default": "Modificación aplicada correctamente"
+    }
+  },
+  "table": {
+    "emptyMessage": "Nadie encontrado",
+    "loadingMessage": "Validando sesiones de red..."
+  }
+}

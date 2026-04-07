@@ -16,6 +16,7 @@
     "minimize": "Minimize",
     "restore": "Restore",
     "save": "Save",
+    "saving": "Saving...",
     "showPassword": "Show password",
     "signIn": "Sign in"
   },
@@ -23,6 +24,8 @@
   "loading": "Loading...",
   "locale": {
     "en": "English",
+    "es": "Spanish",
+    "ja": "Japanese",
     "ru": "Russian"
   },
   "no": "no",

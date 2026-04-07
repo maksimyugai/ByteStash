@@ -1,0 +1,12 @@
+{
+  "categoryList": {
+    "moreCount": "{{moreCount}} más",
+    "noData": "Sin categorías",
+    "showLess": "Mostrar menos"
+  },
+  "categorySuggestions": {
+    "addNewLabel": "Añadir nueva",
+    "placeholder": "Buscar categorías...",
+    "title": "Categorías"
+  }
+}

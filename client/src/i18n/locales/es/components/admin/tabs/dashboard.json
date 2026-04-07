@@ -1,0 +1,31 @@
+{
+  "card": {
+    "apiKeys": {
+      "title": "Claves API"
+    },
+    "shares": {
+      "title": "Enlaces compartidos"
+    },
+    "snippets": {
+      "apiKeys": {
+        "active": "Activas"
+      },
+      "shares": {
+        "total": "Total"
+      },
+      "title": "Fragmentos",
+      "viewType": {
+        "private": "Privados",
+        "public": "Públicos"
+      }
+    },
+    "users": {
+      "authType": {
+        "internal": "Internos",
+        "oidc": "OIDC"
+      },
+      "title": "Usuarios"
+    }
+  },
+  "loadingMessage": "Cargando estadísticas..."
+}

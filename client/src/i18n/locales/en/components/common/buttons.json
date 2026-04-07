@@ -26,6 +26,21 @@
       "nothing": "Nothing to download"
     }
   },
+  "exportButton": {
+    "title": "Export as image",
+    "tooltip": "Export"
+  },
+  "exportModal": {
+    "copyClipboard": "Copy",
+    "downloadPng": "Download PNG",
+    "downloadSvg": "Download SVG",
+    "errorCopy": "Failed to copy image",
+    "errorGenerate": "Failed to generate image",
+    "shareLinkedIn": "Share on LinkedIn",
+    "shareTwitter": "Share on X",
+    "successCopy": "Image copied to clipboard!",
+    "title": "Export code"
+  },
   "fileUploadButton": {
     "error": {
       "unknown": "Unknown error"

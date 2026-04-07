@@ -1,0 +1,8 @@
+{
+  "snippetViewModal": {
+    "error": {
+      "failedLoad": "Error al intentar cargar el fragmento"
+    },
+    "title": "Cargando fragmento..."
+  }
+}

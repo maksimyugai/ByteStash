@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FileCode } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Snippet } from '../../../types/snippets';
-import { getLanguageLabel } from '../../../utils/language/languageUtils';
+import { getLanguageLabel, getFullFileName, getFileIcon } from '../../../utils/language/languageUtils';
 import { basePath } from '../../../utils/api/basePath';
 import { generateEmbedId } from '../../../utils/helpers/embedUtils';
 import { EmbedCodeView } from './EmbedCodeView';
@@ -184,11 +183,10 @@ export const EmbedView: React.FC<EmbedViewProps> = ({
                 {showFileHeaders && (
                   <div className={`flex items-center justify-between text-xs mb-1 h-7 px-3 rounded ${getHoverColor()}`}>
                     <div className="flex items-center gap-1 min-w-0 flex-1">
-                      <FileCode 
-                        size={12} 
-                        className={`${getTextColor()} shrink-0`} 
-                      />
-                      <span className={`truncate ${getTextColor()}`}>{fragment.file_name}</span>
+                      <div className="shrink-0 w-3 h-3 flex items-center justify-center">
+                        {getFileIcon(fragment.file_name, fragment.language, `w-full h-full ${getTextColor()}`)}
+                      </div>
+                      <span className={`truncate ${getTextColor()}`}>{getFullFileName(fragment.file_name, fragment.language)}</span>
                     </div>
                     <span className="ml-2">
                       {getLanguageLabel(fragment.language)}

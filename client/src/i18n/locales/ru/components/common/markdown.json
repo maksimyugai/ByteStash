@@ -1,15 +1,15 @@
 {
   "mermaid": {
-    "title": "Диаграмма Mermaid",
+    "copyCode": "Копировать код Mermaid",
+    "downloadPNG": "Скачать как PNG",
+    "downloadSVG": "Скачать как SVG",
+    "exitFullscreen": "Выйти из полноэкранного режима",
+    "fullscreen": "Полный экран",
     "renderError": "Не удалось отрисовать диаграмму Mermaid:",
     "renderErrorFallback": "Ошибка отрисовки диаграммы",
-    "zoomIn": "Приблизить",
-    "zoomOut": "Отдалить",
     "resetView": "Сбросить вид",
-    "copyCode": "Копировать код Mermaid",
-    "downloadSVG": "Скачать как SVG",
-    "downloadPNG": "Скачать как PNG",
-    "fullscreen": "Полный экран",
-    "exitFullscreen": "Выйти из полноэкранного режима"
+    "title": "Диаграмма Mermaid",
+    "zoomIn": "Приблизить",
+    "zoomOut": "Отдалить"
   }
 }

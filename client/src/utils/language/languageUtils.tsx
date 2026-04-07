@@ -1,5 +1,37 @@
 import { CodeFragment, Snippet } from "../../types/snippets";
 import * as monaco from "monaco-editor";
+import { 
+  FileJson, 
+  FileText, 
+  FileImage, 
+  Globe
+} from 'lucide-react';
+import { 
+  JavascriptOriginalIcon,
+  TypescriptOriginalIcon,
+  PythonOriginalIcon,
+  Html5OriginalIcon,
+  Css3OriginalIcon,
+  PhpOriginalIcon,
+  JavaOriginalIcon,
+  CsharpOriginalIcon,
+  CplusplusOriginalIcon,
+  COriginalIcon,
+  GoOriginalIcon,
+  RustOriginalIcon,
+  RubyOriginalIcon,
+  SwiftOriginalIcon,
+  KotlinOriginalIcon,
+  DartOriginalIcon,
+  ReactOriginalIcon,
+  VuejsOriginalIcon,
+  SvelteOriginalIcon,
+  MysqlOriginalIcon,
+  PostgresqlOriginalIcon,
+  YamlPlainIcon,
+  BashOriginalIcon,
+  MarkdownOriginalIcon
+} from '@devicon/react';
 
 interface DropdownSections {
   used: string[];
@@ -548,12 +580,14 @@ export const getAllLanguageAliases = (): Record<string, string[]> => {
 
 export const getUniqueLanguages = (fragments: CodeFragment[]): string => {
   if (!fragments || fragments.length === 0) {
-    return "No language";
+    return "";
   }
 
   const uniqueLanguages = [
     ...new Set(
-      fragments.map((fragment) => getLanguageLabel(fragment.language))
+      fragments
+        .map((fragment) => getLanguageLabel(fragment.language))
+        .filter((lang) => lang && lang !== "plaintext")
     ),
   ];
 
@@ -653,3 +687,137 @@ export const getLanguageDropdownSections = (): DropdownSections => {
 };
 
 export const languageMapping = LANGUAGE_MAPPING;
+
+export const detectLanguageFromFileName = (fileName: string): string | null => {
+  if (!fileName || typeof fileName !== "string") return null;
+
+  const parts = fileName.split(".");
+  if (parts.length < 2) return null; // No extension found
+
+  const extension = parts.pop()?.toLowerCase() || "";
+  if (!extension) return null;
+
+  // First, check direct matches with language keys
+  if (LANGUAGE_MAPPING[extension]) {
+    return extension;
+  }
+
+  // Then, search through aliases
+  for (const [key, config] of Object.entries(LANGUAGE_MAPPING)) {
+    if (config.aliases.includes(extension)) {
+      return key;
+    }
+  }
+
+  return null;
+};
+
+export const getFullFileName = (fileName: string, language?: string): string => {
+  if (!fileName) return "";
+  
+  if (fileName.includes('.')) return fileName;
+
+  if (!language || normalizeLanguage(language) === 'plaintext') return fileName;
+
+  const normalized = normalizeLanguage(language);
+  const aliases = LANGUAGE_MAPPING[normalized]?.aliases;
+  
+  if (aliases && aliases.length > 0) {
+    return `${fileName}.${aliases[0]}`;
+  }
+
+  return fileName;
+};
+
+export const getFileIcon = (fileName: string, language?: string, className?: string) => {
+  const fullName = getFullFileName(fileName, language);
+  if (!fullName) return <FileText className={className} />;
+  
+  const ext = fullName.split('.').pop()?.toLowerCase() || '';
+  const monacoKey = getMonacoLanguage(language || ext);
+  
+  // Unified mapping based on Monaco's master key
+  switch (monacoKey) {
+    case 'javascript':
+    case 'jsx':
+      return <JavascriptOriginalIcon className={className} size={16} />;
+    case 'typescript':
+    case 'tsx':
+      return <TypescriptOriginalIcon className={className} size={16} />;
+    case 'python':
+      return <PythonOriginalIcon className={className} size={16} />;
+    case 'html':
+      return <Html5OriginalIcon className={className} size={16} />;
+    case 'css':
+    case 'less':
+    case 'scss':
+      return <Css3OriginalIcon className={className} size={16} />;
+    case 'php':
+      return <PhpOriginalIcon className={className} size={16} />;
+    case 'java':
+      return <JavaOriginalIcon className={className} size={16} />;
+    case 'csharp':
+      return <CsharpOriginalIcon className={className} size={16} />;
+    case 'cpp':
+      return <CplusplusOriginalIcon className={className} size={16} />;
+    case 'c':
+      return <COriginalIcon className={className} size={16} />;
+    case 'go':
+      return <GoOriginalIcon className={className} size={16} />;
+    case 'rust':
+      return <RustOriginalIcon className={className} size={16} />;
+    case 'ruby':
+      return <RubyOriginalIcon className={className} size={16} />;
+    case 'swift':
+      return <SwiftOriginalIcon className={className} size={16} />;
+    case 'kotlin':
+      return <KotlinOriginalIcon className={className} size={16} />;
+    case 'dart':
+      return <DartOriginalIcon className={className} size={16} />;
+    case 'sql':
+    case 'mysql':
+      return <MysqlOriginalIcon className={className} size={16} />;
+    case 'postgresql':
+      return <PostgresqlOriginalIcon className={className} size={16} />;
+    case 'yaml':
+    case 'ini':
+      return <YamlPlainIcon className={className} size={16} />;
+    case 'shell':
+    case 'bat':
+    case 'powershell':
+    case 'bash':
+      return <BashOriginalIcon className={className} size={16} />;
+    case 'markdown':
+      return <MarkdownOriginalIcon className={className} size={16} />;
+    case 'xml':
+      return <Globe className={className} />;
+    case 'plaintext':
+      return <FileText className={className} />;
+  }
+
+  // Fallback map extensions directly to specific frameworks/variants that Monaco might umbrella
+  switch (ext) {
+    case 'json':
+      return <FileJson className={className} />;
+    case 'jsx':
+    case 'tsx':
+      return <ReactOriginalIcon className={className} size={16} />;
+    case 'vue':
+      return <VuejsOriginalIcon className={className} size={16} />;
+    case 'svelte':
+      return <SvelteOriginalIcon className={className} size={16} />;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'webp':
+    case 'svg':
+      return <FileImage className={className} />;
+    case 'csv':
+    case 'txt':
+    case 'log':
+      return <FileText className={className} />;
+    default:
+      return <FileText className={className} />;
+  }
+};

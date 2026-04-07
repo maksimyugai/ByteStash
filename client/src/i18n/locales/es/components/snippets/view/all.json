@@ -1,0 +1,36 @@
+{
+  "fullCodeView": {
+    "dateTimeAgo": "Hace {{dateTime}}",
+    "defaultDescription": "Sin descripción disponible"
+  },
+  "files": "archivos",
+  "collapseSidebar": "Contraer panel",
+  "expandSidebar": "Expandir panel",
+  "searchFiles": "Buscar archivos...",
+  "noFilesFound": "No se encontraron archivos que coincidan con tu búsqueda",
+  "filterFiles": "Filtrar archivos",
+  "fileExtensions": "Extensiones de archivo",
+  "noExtension": "Sin extensión",
+  "snippetModal": {
+    "confirmationModal": {
+      "confirmLabel": {
+        "isRecycleView": {
+          "false": "Enviar a Papelera",
+          "true": "Eliminar definitivamente"
+        }
+      },
+      "message": {
+        "isRecycleView": {
+          "false": "¿Seguro que deseas enviar \"{{title}}\" a la papelera de reciclaje?",
+          "true": "¿Confirmas la eliminación permanente de \"{{title}}\"? Esta acción no tiene marcha atrás."
+        }
+      },
+      "title": {
+        "isRecycleView": {
+          "false": "Confirmar Papelera",
+          "true": "Borrado irreversible"
+        }
+      }
+    }
+  }
+}

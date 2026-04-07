@@ -4,19 +4,26 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { setDefaultOptions, type Locale as DateFnsLocale } from 'date-fns'
 import { DEFAULT_LOCALE } from './constants';
 import { resources } from './resources';
-import { Locale } from './types';
+
+const DATE_FNS_LOCALE_MAP: Record<string, string> = {
+  en: 'enUS',
+  es: 'es',
+  ru: 'ru',
+  zh: 'zhCN',
+  it: 'it'
+};
 
 async function setDateFnsDefaultOptions(language?: string) {
-  let currentLocaleName = language || i18n.language;
-
-  if (currentLocaleName === Locale.en) {
-    currentLocaleName = 'enUS';
-  }
+  const rawLocale = language || i18n.language;
+  const baseLocale = rawLocale.split('-')[0];
+  const dateFnsKey = DATE_FNS_LOCALE_MAP[baseLocale] ?? baseLocale;
 
   const localeModule = (await import(`date-fns/locale`) as any);
-  const currentDateFnsLocale: DateFnsLocale = localeModule[currentLocaleName];
+  const currentDateFnsLocale: DateFnsLocale = localeModule[dateFnsKey];
 
-  setDefaultOptions({ locale: currentDateFnsLocale });
+  if (currentDateFnsLocale) {
+    setDefaultOptions({ locale: currentDateFnsLocale });
+  }
 }
 
 i18n
@@ -24,9 +31,9 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: DEFAULT_LOCALE,
-    debug: true,
-    saveMissing: true,
-    saveMissingPlurals: true,
+    debug: process.env.NODE_ENV === 'development',
+    saveMissing: process.env.NODE_ENV === 'development',
+    saveMissingPlurals: process.env.NODE_ENV === 'development',
     defaultNS: 'translation',
     fallbackNS: 'translation',
     interpolation: {

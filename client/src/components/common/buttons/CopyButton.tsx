@@ -42,7 +42,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-2 right-2 p-1 bg-light-surface dark:bg-dark-surface rounded-md 
+      className="p-1 bg-light-surface dark:bg-dark-surface rounded-md 
         hover:bg-light-hover dark:hover:bg-dark-hover transition-colors text-light-text dark:text-dark-text"
       title={translate('copyButton.title')}
     >

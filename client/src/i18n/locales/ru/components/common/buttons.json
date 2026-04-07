@@ -28,6 +28,20 @@
       "nothing": "Нечего скачивать"
     }
   },
+  "exportButton": {
+    "tooltip": "Экспорт"
+  },
+  "exportModal": {
+    "copyClipboard": "Копировать",
+    "downloadPng": "Скачать PNG",
+    "downloadSvg": "Скачать SVG",
+    "errorCopy": "Не удалось скопировать изображение",
+    "errorGenerate": "Не удалось сгенерировать изображение",
+    "shareLinkedIn": "Поделиться в LinkedIn",
+    "shareTwitter": "Поделиться в X",
+    "successCopy": "Изображение скопировано в буфер обмена!",
+    "title": "Экспорт кода"
+  },
   "fileUploadButton": {
     "error": {
       "unknown": "Неизвестная ошибка"
