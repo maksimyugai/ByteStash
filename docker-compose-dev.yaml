@@ -1,11 +1,23 @@
 services:
+  client:
+    build:
+      context: .
+      target: client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      # Backend API target: Points to the ExpressJS container running the REST APIs
+      - BACKEND_API_TARGET=http://server:5000
+    volumes:
+      - "./client:/client"
+      - "/client/node_modules"
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      target: server
+      dockerfile: Dockerfile.dev
     ports:
-      # Serves the web UI, the REST API (/api), and the remote MCP endpoint (/mcp)
-      # for AI assistants — all on the same port, authenticated with a ByteStash API key.
       - "5000:5000"
     environment:
       # e.g. write /bytestash for a domain such as my.domain/bytestash, leave blank in every other case
@@ -21,7 +33,7 @@ services:
       # is this bytestash instance open to new accounts being created?
       - ALLOW_NEW_ACCOUNTS=true
       # Should debug mode be enabled? Essentially enables logging, in most cases leave this as false
-      - DEBUG=false
+      - DEBUG=true
       # Should we use accounts at all? When enabled, it will be like starting a fresh account so export your snippets, no login required
       - DISABLE_ACCOUNTS=false
       # Should internal accounts be disabled?
@@ -45,7 +57,10 @@ services:
       # e.g. "admin,jordan" - these users will have access to the admin panel
       - ADMIN_USERNAMES=admin
     volumes:
+      - "./server:/server"
+      - "/server/node_modules"
       - ./data:/data/snippets
+
 # Uncomment to use docker secrets
 #    secrets:
 #      - jwt
