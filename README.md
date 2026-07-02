@@ -7,59 +7,34 @@ ByteStash is a self-hosted web application designed to store, organise, and mana
 
 ![ByteStash App](https://raw.githubusercontent.com/jordan-dalby/ByteStash/refs/heads/main/media/app-image.png)
 
-## Demo
-Check out the [ByteStash demo](https://bytestash-demo.pikapod.net/) powered by PikaPods!  
-Username: demo  
-Password: demodemo
+> **Note:** this fork is a full port of ByteStash to the Cloudflare stack —
+> Workers (API + static assets), D1 (database), R2 (attachments & backups) and
+> Cloudflare Access (authentication). For the original self-hosted Docker
+> version see [jordan-dalby/ByteStash](https://github.com/jordan-dalby/ByteStash).
 
-## Features
-- Create and Edit Snippets: Easily add new code snippets or update existing ones with an intuitive interface.
-- Filter by Language and Content: Quickly find the right snippet by filtering based on programming language or keywords in the content.
-- Secure Storage: All snippets are securely stored in a sqlite database, ensuring your code remains safe and accessible only to you.
-- AI Integration (MCP): Connect AI assistants such as Claude, OpenAI and Perplexity through a built-in [Model Context Protocol](https://modelcontextprotocol.io) endpoint to search and manage your snippets, authenticated with your existing API key. See [MCP (AI assistants)](#mcp-ai-assistants).
+## Deployment
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full guide: creating the D1/R2
+resources, configuring Cloudflare Access policies (including public share
+links and embeds), CI/CD, local development, and importing data from an
+existing SQLite instance.
 
-## Howto
-### Unraid
-ByteStash is now on the Unraid App Store! Install it from [there](https://unraid.net/community/apps).
+Quick version:
 
-### PikaPods
-Also available on [PikaPods](https://www.pikapods.com/) for [1-click install](https://www.pikapods.com/pods?run=bytestash) from $1/month.
-
-### Docker
-ByteStash can also be hosted manually via the docker-compose file:
-```yaml
-services:
-  bytestash:
-    image: "ghcr.io/jordan-dalby/bytestash:latest"
-    restart: always
-    volumes:
-      - /your/snippet/path:/data/snippets
-    ports:
-      - "5000:5000"
-    environment:
-      # See https://github.com/jordan-dalby/ByteStash/wiki/FAQ#environment-variables
-      #ALLOWED_HOSTS: localhost,my.domain.com,my.domain.net
-      BASE_PATH: ""
-      JWT_SECRET: your-secret
-      TOKEN_EXPIRY: 24h
-      ALLOW_NEW_ACCOUNTS: "true"
-      DEBUG: "true"
-      DISABLE_ACCOUNTS: "false"
-      DISABLE_INTERNAL_ACCOUNTS: "false"
-
-      # See https://github.com/jordan-dalby/ByteStash/wiki/Single-Sign%E2%80%90on-Setup for more info
-      OIDC_ENABLED: "false"
-      OIDC_DISPLAY_NAME: ""
-      OIDC_ISSUER_URL: ""
-      OIDC_CLIENT_ID: ""
-      OIDC_CLIENT_SECRET: ""
-      OIDC_SCOPES: ""
+```bash
+cd worker
+npx wrangler d1 create bytestash-db      # put the id into wrangler.jsonc
+npx wrangler r2 bucket create bytestash-files
+npx wrangler d1 migrations apply bytestash-db --remote
+cd ../client && npm ci && npm run build
+cd ../worker && npm ci && npx wrangler deploy
 ```
 
 ## Tech Stack
-- Frontend: React, Tailwind CSS
-- Backend: Node.js, Express
-- Containerisation: Docker
+- Frontend: React, Tailwind CSS (served as Workers static assets)
+- Backend: Hono on Cloudflare Workers
+- Database: Cloudflare D1 (SQLite)
+- Files & backups: Cloudflare R2
+- Authentication: Cloudflare Access
 
 ## API Documentation
 Once the server is running you can explore the API via Swagger UI. Open
@@ -70,8 +45,7 @@ ByteStash exposes a remote [Model Context Protocol](https://modelcontextprotocol
 endpoint so AI assistants such as **Claude** (desktop & web), **OpenAI/ChatGPT** and
 **Perplexity** can search, read and manage your snippets directly.
 
-- **Endpoint:** `https://<your-host>/mcp` (or `https://<your-host><BASE_PATH>/mcp` when a
-  base path is configured). It is served on the same host/port as the app, so nothing extra
+- **Endpoint:** `https://<your-host>/mcp`. It is served on the same host/port as the app, so nothing extra
   needs to be exposed in your deployment.
 - **Transport:** Streamable HTTP.
 - **Auth:** the **same API key** used by the REST API. Create one under
@@ -109,8 +83,11 @@ endpoint so AI assistants such as **Claude** (desktop & web), **OpenAI/ChatGPT**
 - **Perplexity:** add a remote MCP connector with the URL above and the same
   `Authorization` header.
 
-> The endpoint requires HTTPS for remote clients — terminate TLS at your reverse
-> proxy/ingress as you already do for the web UI.
+> If the `/mcp` path sits behind a Cloudflare Access *Service Auth* policy, MCP
+> clients must additionally send the Access service-token headers
+> (`CF-Access-Client-Id` / `CF-Access-Client-Secret`) — or scope a Bypass
+> policy to `/mcp` and rely on the API key alone. See
+> [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for any improvements or bug fixes.

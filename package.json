@@ -1,17 +1,18 @@
 {
   "name": "bytestash",
-  "description": "A React and node.js app that stores code snippets",
+  "description": "A React + Cloudflare Workers app that stores code snippets",
   "author": "Jordan Dalby",
-  "version": "1.0.0",
-  "main": "server/app.js",
+  "version": "2.0.0",
   "scripts": {
-    "start": "cd client && npm start",
-    "server": "cd server && npm start",
-    "dev": "./docker-compose.sh up --build"
+    "dev": "npm run build --workspace client && npm run dev --workspace worker",
+    "build": "npm run build --workspace client",
+    "test": "npm test --workspace worker",
+    "check": "npm run check --workspace worker",
+    "deploy": "npm run build --workspace client && npm run deploy --workspace worker"
   },
   "workspaces": [
     "client",
-    "server"
+    "worker"
   ],
   "engines": {
     "node": ">=22"

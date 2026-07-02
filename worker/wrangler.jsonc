@@ -1,0 +1,60 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bytestash",
+  "main": "src/index.ts",
+  // Keep in sync with the workerd version pinned by wrangler in package.json
+  "compatibility_date": "2025-09-06",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The client build is served as static assets. API paths are routed to the
+  // worker before asset matching; everything else falls back to the SPA.
+  "assets": {
+    "directory": "../client/build",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // /__scheduled is only used by `wrangler dev --test-scheduled`
+    "run_worker_first": ["/api/*", "/mcp", "/__scheduled"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bytestash-db",
+      "database_id": "2f256851-ef0f-4b54-a398-f7b7dc94f81c",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "bytestash-files"
+    }
+  ],
+
+  "triggers": {
+    // Nightly: purge expired recycle-bin snippets + expired shares, back up tables to R2
+    "crons": ["0 3 * * *"]
+  },
+
+  "vars": {
+    "DEBUG": "false",
+    // Single-user mode without accounts (self-hosters): every request maps to the
+    // shared anonymous user, exactly like the original DISABLE_ACCOUNTS=true.
+    "DISABLE_ACCOUNTS": "false",
+    // Comma-separated usernames that get the admin panel
+    "ADMIN_USERNAMES": "",
+    // Cloudflare Access team domain, e.g. "myteam.cloudflareaccess.com".
+    // Leave empty to disable Access JWT auth (then only DEV_AUTH/DISABLE_ACCOUNTS work).
+    "ACCESS_TEAM_DOMAIN": "",
+    // Application Audience (AUD) tag of the Access application
+    "ACCESS_AUD": "",
+    // Local development only: auto-login as a "dev" user when Access is not configured.
+    // Never enable in production.
+    "DEV_AUTH": "false"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

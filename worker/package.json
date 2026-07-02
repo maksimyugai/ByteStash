@@ -1,0 +1,30 @@
+{
+  "name": "bytestash-worker",
+  "version": "2.0.0",
+  "description": "ByteStash API on Cloudflare Workers (D1 + R2 + Access)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "migrate:local": "wrangler d1 migrations apply bytestash-db --local",
+    "migrate:remote": "wrangler d1 migrations apply bytestash-db --remote"
+  },
+  "dependencies": {
+    "@hono/mcp": "^0.1.4",
+    "@modelcontextprotocol/sdk": "^1.15.0",
+    "bad-words": "^4.0.0",
+    "hono": "^4.8.0",
+    "jose": "^6.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0",
+    "wrangler": "^4.22.0"
+  }
+}

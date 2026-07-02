@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { LogOut, User, Key, Lock, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
@@ -6,8 +6,6 @@ import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { Link, useNavigate } from 'react-router-dom';
 import { ApiKeysModal } from './ApiKeysModal';
 import { ChangePasswordModal } from './ChangePasswordModal';
-import { apiClient } from '../../utils/api/apiClient';
-import { OIDCConfig } from '../../types/auth';
 import { ROUTES } from '../../constants/routes';
 
 export const UserDropdown: React.FC = () => {
@@ -17,22 +15,7 @@ export const UserDropdown: React.FC = () => {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout, authConfig } = useAuth();
-  const [oidcConfig, setOIDCConfig] = useState<OIDCConfig | null>(null);
   const navigate = useNavigate();
-
-
-  useEffect(() => {
-    const fetchOIDCConfig = async () => {
-      try {
-        const response = await apiClient.get<OIDCConfig>('/api/auth/oidc/config');
-        setOIDCConfig(response);
-      } catch (error) {
-        console.error('Failed to fetch OIDC config:', error);
-      }
-    };
-
-    fetchOIDCConfig();
-  }, []);
 
   if (user?.id === 0) {
     return (<></>)
@@ -40,13 +23,19 @@ export const UserDropdown: React.FC = () => {
 
   useOutsideClick(dropdownRef, () => setIsOpen(false));
 
-  const handlePasswordChanged = () => {
-    // Log out the user after password change to force re-login
-    oidcConfig?.enabled && oidcConfig?.logged_in ? handleOIDCLogout() : logout();
+  const handleLogout = () => {
+    // The session lives at the edge (Cloudflare Access) — terminate it there,
+    // otherwise the next request would silently re-authenticate.
+    if (authConfig?.externalAuth && authConfig.externalLogoutUrl) {
+      window.location.href = authConfig.externalLogoutUrl;
+      return;
+    }
+    logout();
   };
 
-  const handleOIDCLogout = async () => {
-    window.location.href = `${window.__BASE_PATH__ || ''}/api/auth/oidc/logout`;
+  const handlePasswordChanged = () => {
+    // Log out the user after password change to force re-login
+    handleLogout();
   };
 
   if (user) {
@@ -106,7 +95,7 @@ export const UserDropdown: React.FC = () => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                oidcConfig?.enabled && oidcConfig?.logged_in ? handleOIDCLogout() : logout();
+                handleLogout();
               }}
               className="w-full px-4 py-2 text-sm text-left text-light-text dark:text-dark-text hover:bg-light-hover 
                 dark:hover:bg-dark-hover flex items-center gap-2"

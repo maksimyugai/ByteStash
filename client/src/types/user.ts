@@ -21,4 +21,8 @@ export interface AuthConfig {
   disableAccounts: boolean;
   disableInternalAccounts: boolean;
   allowPasswordChanges: boolean;
+  /** Authentication happens at the edge (Cloudflare Access); no internal login */
+  externalAuth?: boolean;
+  /** Where to send the browser to terminate the external (Access) session */
+  externalLogoutUrl?: string;
 }
