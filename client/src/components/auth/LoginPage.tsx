@@ -38,7 +38,9 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <button
-          onClick={() => { window.location.href = '/'; }}
+          // The Access application guards only this path; passing through it
+          // sets the domain-wide CF_Authorization cookie
+          onClick={() => { window.location.href = '/auth/login'; }}
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 px-4 py-2
             bg-light-primary dark:bg-dark-primary text-white rounded-md hover:opacity-90 transition-colors

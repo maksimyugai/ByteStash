@@ -30,6 +30,36 @@ describe('UserRepository', () => {
     expect(a.username).not.toBe(b.username);
   });
 
+  it('links an Access identity to a migrated account by any of its emails', async () => {
+    const users = new UserRepository(env.DB);
+    await env.DB.prepare(
+      `INSERT INTO users (username, username_normalized, password_hash, email)
+       VALUES ('legacy', 'legacy', '', 'One@a.com, two@b.com')`
+    ).run();
+
+    // First login (first email) adopts the account and links the identity
+    const first = await users.findOrCreateAccessUser({ sub: 'sub-1', email: 'one@a.com' });
+    expect(first.username).toBe('legacy');
+
+    // Same identity again resolves via the oidc link
+    const again = await users.findOrCreateAccessUser({ sub: 'sub-1', email: 'one@a.com' });
+    expect(again.id).toBe(first.id);
+
+    // A different identity with the second listed email maps to the same account
+    const second = await users.findOrCreateAccessUser({ sub: 'sub-2', email: 'two@b.com' });
+    expect(second.id).toBe(first.id);
+
+    // The original link is kept, not overwritten by the secondary email
+    const row = await env.DB.prepare('SELECT oidc_id FROM users WHERE id = ?')
+      .bind(first.id)
+      .first<{ oidc_id: string }>();
+    expect(row!.oidc_id).toBe('sub-1');
+
+    // An unrelated email still provisions a fresh user
+    const stranger = await users.findOrCreateAccessUser({ sub: 'sub-3', email: 'three@c.com' });
+    expect(stranger.id).not.toBe(first.id);
+  });
+
   it('creates the shared anonymous user with id 0', async () => {
     const users = new UserRepository(env.DB);
     const anon = await users.getOrCreateAnonymousUser();

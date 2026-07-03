@@ -37,6 +37,12 @@ app.use('*', async (c, next) => {
   return next();
 });
 
+// Access login trigger: the only path that needs to sit behind an Access
+// application. Access intercepts the request, runs the IdP flow, sets the
+// domain-wide CF_Authorization cookie and replays the request — we just send
+// the browser home, now authenticated.
+app.get('/auth/login', (c) => c.redirect('/'));
+
 app.route('/api/auth', authRoutes);
 
 app.use('/api/keys/*', authenticateUser);

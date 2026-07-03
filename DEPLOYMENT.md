@@ -46,37 +46,37 @@ identity comes from the Access JWT.
 
 ## 4. Cloudflare Access setup
 
-Create a **self-hosted Access application** for your hostname
-(Zero Trust → Access → Applications):
+The worker enforces all privacy itself (private endpoints return 401 without a
+valid identity; public endpoints only ever serve `is_public = 1` rows), so
+Access does **not** need to wrap the whole hostname — it only has to issue the
+identity cookie at login. One application, no bypass lists:
 
-1. **Main application** — domain `snippets.example.com`, session ~24h.
+1. Create a **self-hosted Access application** scoped to the login trigger
+   path: domain `snippets.example.com/auth/login`, session ~24h.
    Policy: *Allow* for your users (email / IdP group). Copy the **AUD tag**
    into `ACCESS_AUD`.
-2. **Bypass application(s)** for the public surface (path-scoped applications
-   on the same hostname), each with a single *Bypass → Everyone* policy:
-   - `snippets.example.com/api/embed`
-   - `snippets.example.com/api/share`
-   - `snippets.example.com/api/public`
-   - `snippets.example.com/assets`
-   - `snippets.example.com/monacoeditorwork`
-   - `snippets.example.com/share` (SPA route for share links)
-   - `snippets.example.com/embed` (SPA route for embeds)
-   - `snippets.example.com/manifest.json`, `/favicon.ico`, `/api-docs`
+2. That's it. The "Sign in with Cloudflare Access" button navigates to
+   `/auth/login`; Access runs the IdP flow, sets the domain-wide
+   `CF_Authorization` cookie and returns the browser to the app. The worker
+   validates that cookie (JWKS + AUD) on every request. Public share links,
+   embeds, public-snippet permalinks and the public browsing page all work
+   anonymously; "requires auth" shares are enforced by the worker via the same
+   cookie.
+3. Non-browser clients (MCP, scripts) don't interact with Access at all —
+   they authenticate with a ByteStash API key on `/mcp` and `/api/snippets`.
 
-   "Requires auth" share links still work: the app validates the visitor's
-   `CF_Authorization` cookie itself on bypassed paths.
-3. **Service application** for non-browser clients (MCP, scripts) on
-   `snippets.example.com/mcp` and `snippets.example.com/api/snippets` with a
-   *Service Auth* policy (Access service tokens), **or** a Bypass policy if you
-   are comfortable relying on ByteStash API keys alone — the app always
-   requires a valid API key on `/mcp` and accepts one on `/api/snippets`
-   regardless of the Access decision.
+   Alternative (more edge shielding, more config): an *Allow* application on
+   the whole hostname plus path-scoped *Bypass* applications for the public
+   surface (`/api`, `/assets`, `/monacoeditorwork`, `/share`, `/embed`,
+   `/snippets`, `/public/snippets`) — note the 5-hostname limit per
+   application.
 
 How auth flows end to end:
 
-- Browser → Access login → request carries `Cf-Access-Jwt-Assertion` → the
-  worker validates it against `https://<team>/cdn-cgi/access/certs` (issuer +
-  AUD) and auto-provisions the user on first sight (email → username).
+- Browser → `/auth/login` → Access IdP flow → domain-wide `CF_Authorization`
+  cookie → the worker validates it against
+  `https://<team>/cdn-cgi/access/certs` (issuer + AUD) and auto-provisions the
+  user on first sight (email → username).
 - Users are stored in the existing `users` table with
   `oidc_provider = 'cloudflare-access'`; no schema change was needed.
 - Logout button sends the browser to `https://<team>/cdn-cgi/access/logout`.
@@ -123,14 +123,18 @@ Notes:
 
 - Existing **API keys keep working** as-is.
 - Existing **password hashes are ignored** — there is no password login
-  anymore. Users are matched by Access identity; a previously-registered user
-  will get a *new* user row on first Access login unless you pre-link them:
+  anymore. Users are matched by Access identity. To land a migrated user in
+  their old account (instead of a freshly provisioned empty one), set the
+  email(s) they log in with on the old row — the first Access login with any
+  listed address claims and links the account automatically:
   ```sql
-  UPDATE users SET oidc_id = '<email>', oidc_provider = 'cloudflare-access'
+  UPDATE users SET email = 'me@example.com, me@alt-domain.com'
   WHERE username = '<old-username>';
   ```
-  (`oidc_id` must equal the `sub` claim of the Access JWT; if your IdP has no
-  stable sub, the app falls back to email.)
+- A local-only seed migration (e.g. `worker/migrations/0003_import_data.sql`)
+  is another option: it runs on every fresh initialization (local dev, tests,
+  CI). Keep it **out of git** if the snippet bodies contain anything secret —
+  this repo's `.gitignore` already excludes `0003_import_data.sql`.
 - D1 **Time Travel** gives 30-day point-in-time restore out of the box; the
   worker additionally exports NDJSON dumps of every table to
   `backups/YYYY-MM-DD/` in the R2 bucket each night.

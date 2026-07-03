@@ -58,6 +58,25 @@ export class UserRepository {
   }
 
   /**
+   * Imported (pre-Access) accounts can list several addresses in the email
+   * column, comma-separated. A login with any of them claims the account, so
+   * migrated users land in their old account instead of a freshly provisioned
+   * empty one. The email is trusted because it comes from a validated Access
+   * JWT and the column is only ever set by us.
+   */
+  private async findByAccessEmail(email: string): Promise<AuthUser | null> {
+    return this.db
+      .prepare(
+        `SELECT id, username, created_at, email, name, oidc_id, is_admin, is_active
+         FROM users
+         WHERE email IS NOT NULL
+           AND (',' || LOWER(REPLACE(email, ' ', '')) || ',') LIKE ('%,' || LOWER(?) || ',%')`
+      )
+      .bind(email)
+      .first<AuthUser>();
+  }
+
+  /**
    * Find or auto-provision the user identified by a Cloudflare Access JWT.
    * Reuses the oidc_id/oidc_provider columns so no schema change is needed
    * and existing OIDC users keep working if their IdP subject is stable.
@@ -72,6 +91,23 @@ export class UserRepository {
         .bind(profile.sub, ACCESS_PROVIDER)
         .first<AuthUser>();
       if (existing) return existing;
+
+      if (profile.email) {
+        const byEmail = await this.findByAccessEmail(profile.email);
+        if (byEmail) {
+          if (!byEmail.oidc_id) {
+            // First Access login for a migrated account — link the identity
+            await this.db
+              .prepare('UPDATE users SET oidc_id = ?, oidc_provider = ? WHERE id = ?')
+              .bind(profile.sub, ACCESS_PROVIDER, byEmail.id)
+              .run();
+            Logger.info(`Linked Access identity to existing user "${byEmail.username}"`);
+          }
+          // Already linked (e.g. the account lists several emails and this is
+          // a secondary one) — keep the original link, it's the same person.
+          return byEmail;
+        }
+      }
 
       const sanitizeName = (name: string) =>
         name
