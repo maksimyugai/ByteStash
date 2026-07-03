@@ -1,8 +1,14 @@
 {
   "name": "bytestash",
   "description": "A React + Cloudflare Workers app that stores code snippets",
-  "author": "Jordan Dalby",
+  "author": "Max Yugai",
   "version": "2.0.0",
+  "contributors": [
+    {
+      "name": "Jordan Dalby",
+      "url": "https://github.com/jordan-dalby/ByteStash"
+    }
+  ],
   "scripts": {
     "dev": "npm run build --workspace client && npm run dev --workspace worker",
     "build": "npm run build --workspace client",
