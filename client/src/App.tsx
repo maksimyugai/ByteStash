@@ -5,8 +5,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { LoginPage } from './components/auth/LoginPage';
-import { RegisterPage } from './components/auth/RegisterPage';
-import { OIDCCallback } from './components/auth/oidc/OIDCCallback';
 import { ROUTES } from './constants/routes';
 import { PageContainer } from './components/common/layout/PageContainer';
 import { ToastProvider } from './contexts/ToastContext';
@@ -16,7 +14,6 @@ import SnippetPage from './components/snippets/view/SnippetPage';
 import PublicSnippetStorage from './components/snippets/view/public/PublicSnippetStorage';
 import EmbedView from './components/snippets/embed/EmbedView';
 import RecycleSnippetStorage from './components/snippets/view/recycle/RecycleSnippetStorage';
-import { OIDCLogoutCallback } from './components/auth/oidc/OIDCLogoutCallback';
 import { AdminPage } from './components/admin/AdminPage';
 
 const queryClient = new QueryClient({
@@ -82,9 +79,6 @@ const App: React.FC = () => {
               <AuthProvider>
                 <Routes>
                   <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-                  <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
-                  <Route path={ROUTES.AUTH_CALLBACK} element={<OIDCCallback />} />
-                  <Route path={ROUTES.LOGOUT_CALLBACK} element={<OIDCLogoutCallback />} />
                   <Route path={ROUTES.SHARED_SNIPPET} element={<SharedSnippetView />} />
                   <Route path={ROUTES.PUBLIC_SNIPPETS} element={<PublicSnippetStorage />} />
                   <Route path={ROUTES.RECYCLE} element={<RecycleSnippetStorage />} />

@@ -15,8 +15,9 @@ export default defineConfig({
   server: {
     allowedHosts: allowedHosts,
     proxy: {
+      // `wrangler dev` (worker/) listens on 8787
       '/api': {
-        target: process.env.BACKEND_API_TARGET || 'http://localhost:5000',
+        target: process.env.BACKEND_API_TARGET || 'http://localhost:8787',
         changeOrigin: true,
       },
     },

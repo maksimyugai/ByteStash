@@ -7,3 +7,10 @@ dist
 kube.yml
 
 example-fragment.js
+# wrangler local state
+.wrangler
+
+# Personal seed migration — contains live credentials inside snippet bodies
+# (Pearson S2S, GitHub PAT, SMTP/R2 keys). Do NOT commit to a public repo;
+# remove this line only if the repository is private.
+worker/migrations/0003_import_data.sql

@@ -1,0 +1,76 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bytestash",
+  "main": "src/index.ts",
+  // Keep in sync with the workerd version pinned by wrangler in package.json
+  "compatibility_date": "2025-09-06",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The app is reachable only via the custom domain; wrangler would otherwise
+  // re-enable workers.dev/preview URLs on every deploy.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "snippets.maksimyugai.com", "custom_domain": true }],
+
+  // The client build is served as static assets. API paths are routed to the
+  // worker before asset matching; everything else falls back to the SPA.
+  "assets": {
+    "directory": "../client/build",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // /auth/login is the Access login trigger; /__scheduled is only used by
+    // `wrangler dev --test-scheduled`
+    "run_worker_first": ["/api/*", "/mcp", "/auth/login", "/__scheduled"],
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bytestash-db",
+      "database_id": "2f256851-ef0f-4b54-a398-f7b7dc94f81c",
+      "migrations_dir": "migrations",
+    },
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "bytestash-files",
+    },
+  ],
+
+  // The previously deployed "bytestash" worker was a Cloudflare Containers
+  // experiment exporting a `ByteStash` Durable Object (container supervisor,
+  // no app data — the container disk was ephemeral). v1 records its history;
+  // v2 deletes the class so this DO-less worker can deploy over it.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ByteStash"] },
+    { "tag": "v2", "deleted_classes": ["ByteStash"] },
+  ],
+
+  "triggers": {
+    // Nightly: purge expired recycle-bin snippets + expired shares, back up tables to R2
+    "crons": ["0 3 * * *"],
+  },
+
+  "vars": {
+    "DEBUG": "false",
+    // Single-user mode without accounts (self-hosters): every request maps to the
+    // shared anonymous user, exactly like the original DISABLE_ACCOUNTS=true.
+    "DISABLE_ACCOUNTS": "false",
+    // Comma-separated usernames that get the admin panel
+    "ADMIN_USERNAMES": "max",
+    // Cloudflare Access team domain, e.g. "myteam.cloudflareaccess.com".
+    // Leave empty to disable Access JWT auth (then only DEV_AUTH/DISABLE_ACCOUNTS work).
+    "ACCESS_TEAM_DOMAIN": "yugai.cloudflareaccess.com",
+    // Application Audience (AUD) tag of the Access application
+    "ACCESS_AUD": "93655d17c376c9a89d6ca08978990c9306ba409267b814d9a3718acc8d3df994",
+    // Local development only: auto-login as a "dev" user when Access is not configured.
+    // Never enable in production.
+    "DEV_AUTH": "false",
+  },
+
+  "observability": {
+    "enabled": true,
+  },
+}

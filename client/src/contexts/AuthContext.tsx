@@ -61,13 +61,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             addToast(translate('authProvider.error.failedCreateAnonymousSession'), 'error');
           }
         } else {
+          // With external auth (Cloudflare Access) the identity comes from the
+          // edge, not from a stored token — always ask the server who we are.
           const token = localStorage.getItem('token');
-          if (token) {
+          if (config.externalAuth || token) {
             const response = await verifyToken();
             if (response.valid && response.user) {
               setIsAuthenticated(true);
               setUser(response.user);
-            } else {
+            } else if (token) {
               localStorage.removeItem('token');
               document.cookie = defaultCookie;
             }
