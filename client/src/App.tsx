@@ -40,7 +40,7 @@ const AuthenticatedApp: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.PUBLIC_SNIPPETS} replace />;
   }
 
   return <SnippetStorage />;
